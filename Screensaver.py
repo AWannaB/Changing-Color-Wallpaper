@@ -69,6 +69,8 @@ def bind_button(*buttons):
 root = tk.Tk()
 # Start with a random color
 root.configure(bg=ranHexColor())
+# Hide the mouse cursor
+root.configure(cursor='none')
 #  Make the window Fullscreen
 root.attributes('-fullscreen', True)
 # Bind the ESC key stop the program
