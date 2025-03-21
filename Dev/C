@@ -1,0 +1,82 @@
+#include <windows.h>
+#include <stdlib.h>
+// Window Procedure function prototype
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+
+int time() {
+    srand(time(NULL));
+    int min = 100, max = 10000;
+    int ranNum = rand() % (max - min + 1) + min;
+    return ranNum;
+}
+int color() {
+    WNDCLASS wc = {0};
+    int r = 0;//rand() % 255;
+    int g = 255;//rand() % 255;
+    int b = 255;//rand() % 255;
+    wc.hbrBackground = CreateSolidBrush(RGB(r, g, b));
+    return wc.hbrBackground;
+}
+
+// Entry point of the program
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    const char CLASS_NAME[] = "BlueWindowClass";
+
+    // Window class structure
+    WNDCLASS wc = {0};
+
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+    wc.hbrBackground = color();
+    //wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 255)); // Blue background
+
+    RegisterClass(&wc);
+
+    // Create the window
+    HWND hwnd = CreateWindowEx(
+        0,
+        CLASS_NAME,
+        "Blue Window",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
+        NULL,
+        NULL,
+        hInstance,
+        NULL
+    );
+
+    if (hwnd == NULL) {
+        return 0;
+    }
+
+    ShowWindow(hwnd, nCmdShow);
+    UpdateWindow(hwnd);
+
+    // Message loop
+    MSG msg = {0};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return 0;
+}
+
+// Window procedure to handle messages
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_DESTROY:
+            PostQuitMessage(0);
+        return 0;
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            //color();//FillRect(hdc, &ps.rcPaint, CreateSolidBrush(RGB(0, 0, 255))); // Ensure background stays blue
+            EndPaint(hwnd, &ps);
+        }
+        return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
