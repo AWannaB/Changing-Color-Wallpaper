@@ -1,22 +1,29 @@
 #include <windows.h>
 #include <stdlib.h>
+#include <time.h>
+
+HBRUSH hBackgroundBrush = NULL;
 // Window Procedure function prototype
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 int time() {
-    srand(time(NULL));
+    //srand(time(NULL));
     int min = 100, max = 10000;
     int ranNum = rand() % (max - min + 1) + min;
     return ranNum;
 }
-int color() {
-    WNDCLASS wc = {0};
-    int r = 0;//rand() % 255;
-    int g = 255;//rand() % 255;
-    int b = 255;//rand() % 255;
-    wc.hbrBackground = CreateSolidBrush(RGB(r, g, b));
-    return wc.hbrBackground;
+HBRUSH color() {
+    srand(time(NULL));
+    int r = rand() % 256;
+    int g = rand() % 256;
+    int b = rand() % 256;
+
+    if (hBackgroundBrush) {
+        DeleteObject(hBackgroundBrush);
+    }
+    hBackgroundBrush = CreateSolidBrush(RGB(r, g, b));
+    return hBackgroundBrush;
 }
 
 // Entry point of the program
@@ -30,7 +37,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
     wc.hbrBackground = color();
-    //wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 255)); // Blue background
 
     RegisterClass(&wc);
 
@@ -38,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     HWND hwnd = CreateWindowEx(
         0,
         CLASS_NAME,
-        "Blue Window",
+        "Window",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
         NULL,
@@ -54,26 +60,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
+    SetTimer(hwnd, 1, time(), NULL);
     // Message loop
     MSG msg = {0};
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-
+    if (hBackgroundBrush) {
+        DeleteObject(hBackgroundBrush);
+    }
     return 0;
 }
 
 // Window procedure to handle messages
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
+        case WM_TIMER: {
+            WNDCLASS wc = {0};
+            wc.hbrBackground = color();
+
+            InvalidateRect(hwnd, NULL, TRUE);
+            UpdateWindow(hwnd);
+        }
         case WM_DESTROY:
             PostQuitMessage(0);
         return 0;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-            //color();//FillRect(hdc, &ps.rcPaint, CreateSolidBrush(RGB(0, 0, 255))); // Ensure background stays blue
+            FillRect(hdc, &ps.rcPaint, hBackgroundBrush);
             EndPaint(hwnd, &ps);
         }
         return 0;
