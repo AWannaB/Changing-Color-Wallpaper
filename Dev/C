@@ -1,13 +1,14 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <time.h>
+//#include <ncurses.h>
 
 HBRUSH hBackgroundBrush = NULL;
 // Window Procedure function prototype
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-int time() {
+int ranTime() {
     //srand(time(NULL));
     int min = 100, max = 10000;
     int ranNum = rand() % (max - min + 1) + min;
@@ -39,14 +40,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hbrBackground = color();
 
     RegisterClass(&wc);
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
     // Create the window
     HWND hwnd = CreateWindowEx(
         0,
         CLASS_NAME,
         "Window",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
+        WS_POPUP,
+        0, 0, screenWidth, screenHeight,
         NULL,
         NULL,
         hInstance,
@@ -59,13 +62,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
+    ShowCursor(FALSE);
 
-    SetTimer(hwnd, 1, time(), NULL);
+    SetTimer(hwnd, 1, ranTime(), NULL);
     // Message loop
     MSG msg = {0};
     while (GetMessage(&msg, NULL, 0, 0)) {
+        WNDCLASS wc = {0};
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+        for (int i = 0; i < 256; i++) {
+            if (GetAsyncKeyState(i) & 0x8000) {
+                if (i == VK_ESCAPE) {
+                    return 0;
+                } else {
+                    wc.hbrBackground = color();
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    UpdateWindow(hwnd);
+                }
+                Sleep(10); // Small delay to prevent too many outputs
+            }
+            /*wc.hbrBackground = color();
+            InvalidateRect(hwnd, NULL, TRUE);
+            UpdateWindow(hwnd);*/
+        }
     }
     if (hBackgroundBrush) {
         DeleteObject(hBackgroundBrush);
@@ -82,6 +102,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             InvalidateRect(hwnd, NULL, TRUE);
             UpdateWindow(hwnd);
+            break;
         }
         case WM_DESTROY:
             PostQuitMessage(0);
