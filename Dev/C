@@ -1,18 +1,20 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <time.h>
-//#include <ncurses.h>
 
+
+//#include <ncurses.h>
 HBRUSH hBackgroundBrush = NULL;
 // Window Procedure function prototype
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 int ranTime() {
-    //srand(time(NULL));
-    int min = 100, max = 10000;
-    int ranNum = rand() % (max - min + 1) + min;
-    return ranNum;
+
+//srand(time(NULL));
+int min = 100, max = 10000;
+int ranNum = rand() % (max - min + 1) + min;
+return ranNum;
 }
 HBRUSH color() {
     srand(time(NULL));
@@ -20,20 +22,23 @@ HBRUSH color() {
     int g = rand() % 256;
     int b = rand() % 256;
 
+
+
     if (hBackgroundBrush) {
-        DeleteObject(hBackgroundBrush);
+    DeleteObject(hBackgroundBrush);
     }
+
     hBackgroundBrush = CreateSolidBrush(RGB(r, g, b));
     return hBackgroundBrush;
 }
 
+
+
 // Entry point of the program
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     const char CLASS_NAME[] = "BlueWindowClass";
-
-    // Window class structure
+// Window class structure
     WNDCLASS wc = {0};
-
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
@@ -45,47 +50,54 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Create the window
     HWND hwnd = CreateWindowEx(
-        0,
-        CLASS_NAME,
-        "Window",
-        WS_POPUP,
-        0, 0, screenWidth, screenHeight,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
+    0,
+    CLASS_NAME,
+    "Window",
+    WS_POPUP,
+    0, 0, screenWidth, screenHeight,
+    NULL,
+    NULL,
+    hInstance,
+    NULL
     );
 
+
     if (hwnd == NULL) {
-        return 0;
+    return 0;
     }
+
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
     ShowCursor(FALSE);
 
     SetTimer(hwnd, 1, ranTime(), NULL);
+
     // Message loop
     MSG msg = {0};
     while (GetMessage(&msg, NULL, 0, 0)) {
-        WNDCLASS wc = {0};
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-        for (int i = 0; i < 256; i++) {
-            if (GetAsyncKeyState(i) & 0x8000) {
-                if (i == VK_ESCAPE) {
-                    return 0;
-                } else {
-                    wc.hbrBackground = color();
-                    InvalidateRect(hwnd, NULL, TRUE);
-                    UpdateWindow(hwnd);
-                }
-                Sleep(10); // Small delay to prevent too many outputs
-            }
-            /*wc.hbrBackground = color();
+    WNDCLASS wc = {0};
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+    for (int i = 0; i < 256; i++) {
+//if (GetAsyncKeyState(i) & 0x8000) {
+    if (GetKeyState(i) & 0x8000) {
+        if (i == VK_ESCAPE) {
+            return 0;
+        } else {
+            wc.hbrBackground = color();
             InvalidateRect(hwnd, NULL, TRUE);
-            UpdateWindow(hwnd);*/
-        }
+            UpdateWindow(hwnd);
+    }
+    Sleep(10); // Small delay to prevent too many outputs
+    }
+
+/*wc.hbrBackground = color();
+
+InvalidateRect(hwnd, NULL, TRUE);
+
+UpdateWindow(hwnd);*/
+    }
     }
     if (hBackgroundBrush) {
         DeleteObject(hBackgroundBrush);
@@ -93,7 +105,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return 0;
 }
 
+
+
 // Window procedure to handle messages
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_TIMER: {
@@ -106,14 +121,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         case WM_DESTROY:
             PostQuitMessage(0);
-        return 0;
+            return 0;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
             FillRect(hdc, &ps.rcPaint, hBackgroundBrush);
             EndPaint(hwnd, &ps);
         }
-        return 0;
+    return 0;
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
