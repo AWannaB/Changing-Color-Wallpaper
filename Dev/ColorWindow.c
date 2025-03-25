@@ -7,6 +7,7 @@ HBRUSH hBackgroundBrush = NULL;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int ranTime() {
+    srand(time(NULL));
     int min = 100, max = 10000;
     int ranNum = rand() % (max - min + 1) + min;
     return ranNum;
@@ -28,7 +29,7 @@ HBRUSH color() {
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     const char CLASS_NAME[] = "BlueWindowClass";
 
-    srand(time(NULL));
+
 
     WNDCLASS wc = {0};
     wc.lpfnWndProc = WindowProc;
@@ -95,7 +96,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             break;
-
+        case WM_LBUTTONDOWN:
+            color(); // Change color on any other key
+            InvalidateRect(hwnd, NULL, TRUE);
+        break;
+        case WM_RBUTTONDOWN:
+            color(); // Change color on any other key
+        InvalidateRect(hwnd, NULL, TRUE);
+        break;
+        case WM_MBUTTONDOWN:
+            color(); // Change color on any other key
+        InvalidateRect(hwnd, NULL, TRUE);
+        break;
+        case WM_MOUSEWHEEL:
+            color();
+        InvalidateRect(hwnd, NULL, TRUE);
+        break;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
