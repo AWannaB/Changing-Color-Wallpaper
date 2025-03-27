@@ -1,14 +1,16 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 HBRUSH hBackgroundBrush = NULL;
-
+int initialX = 0;
+int initialY = 0;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int ranTime() {
     srand(time(NULL));
-    int min = 1000, max = 5000;
+    int min = 100, max = 10000;
     int ranNum = rand() % (max - min + 1) + min;
     return ranNum;
 }
@@ -28,6 +30,11 @@ HBRUSH color() {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     const char CLASS_NAME[] = "BlueWindowClass";
+    POINT p;
+    GetCursorPos(&p);
+    initialX = p.x;
+    initialY = p.y;
+
 
 
 
@@ -111,6 +118,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_MOUSEWHEEL:
             color();
         InvalidateRect(hwnd, NULL, TRUE);
+        break;
+        case WM_MOUSEMOVE:
+            int currentX = LOWORD(lParam);
+            int currentY = HIWORD(lParam);
+
+        double distance = sqrt(pow(currentX - initialX, 2) + pow(currentY - initialY, 2));
+        if (distance > 500) {
+            initialX = currentX;
+            initialY = currentY;
+            color();
+            InvalidateRect(hwnd, NULL, TRUE);
+        }
         break;
         case WM_DESTROY:
             PostQuitMessage(0);
